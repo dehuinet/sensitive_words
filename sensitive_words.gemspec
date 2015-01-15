@@ -1,7 +1,7 @@
 # coding: utf-8
 $LOAD_PATH.unshift('lib')
 
-version = '0.0.1'
+version = '0.0.2'
 
 Gem::Specification.new 'sensitive_words',version do |spec|
   spec.authors       = ["Jeffrey"]
