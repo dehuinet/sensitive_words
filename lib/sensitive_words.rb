@@ -92,13 +92,15 @@ class SensitiveWords
     @node, @words = @@dict, []
     @word, @queue = '', []
 
-    @input.chars.each do |char|
-      loop do 
-        break if @queue.empty?
-        chr = @queue.shift
-        process_check(chr, true)
+    if @input then
+      @input.chars.each do |char|
+        loop do 
+          break if @queue.empty?
+          chr = @queue.shift
+          process_check(chr, true)
+        end
+        process_check(char)
       end
-      process_check(char)
     end
 
     process_check('')
