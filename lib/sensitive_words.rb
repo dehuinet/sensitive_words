@@ -14,6 +14,18 @@ class SensitiveWords
       puts "#{boom.class} - #{boom.message}"
     end
     
+    def load_multi_dict(dict_path_array)
+      dict_path_array.each do|d|
+        if File.exist?(d) then
+          load_dict(d)
+        end
+      end
+    end
+
+    def clear_dict
+      @@dict = {}
+    end
+
     def get_dict_file_hash(path)
       tree = {}
       file = File.open(path, 'r')
