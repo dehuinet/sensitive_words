@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+require 'pry'
 
 class SensitiveWords
 
@@ -6,24 +7,28 @@ class SensitiveWords
 
   class << self
 
-    def load_dict(dict_path)
+    def load_dict(identify, dict_path)
       new_dict = get_dict_file_hash(dict_path)
-      dict = @@dict.merge new_dict
-      @@dict = dict
+      dict = {}
+      if @@dict.member?(identify) then
+        dict = @@dict.fetch(identify)
+      end
+      temp_dict = dict.merge new_dict
+      @@dict.store(identify, temp_dict)
     rescue Errno::ENOENT => boom
       puts "#{boom.class} - #{boom.message}"
     end
     
-    def load_multi_dict(dict_path_array)
+    def load_multi_dict(identify, dict_path_array)
       dict_path_array.each do|d|
         if File.exist?(d) then
-          load_dict(d)
+          load_dict(identify, d)
         end
       end
     end
 
-    def clear_dict
-      @@dict = {}
+    def clear_dict(identify)
+      @@dict.delete(identify)
     end
 
     def get_dict_file_hash(path)
@@ -51,13 +56,13 @@ class SensitiveWords
       file.close if file
     end
 
-    def sensitive_words(input,max=nil)
+    def sensitive_words(identify, input,max=nil)
       ins = SensitiveWords.new(input)
       max = max.to_i
       if max > 0
-        ins.sensitive_words(max)
+        ins.sensitive_words(identify, max)
       else
-        ins.all_sensitive_words
+        ins.all_sensitive_words(identify)
       end
     end
 
@@ -69,8 +74,8 @@ class SensitiveWords
   end
   
   #只要有限个敏感词
-  def sensitive_words(max)
-    @node, @words = @@dict, []
+  def sensitive_words(identify, max)
+    @node, @words = get_dict_by_identify(identify), []
     @word, @queue = '', []
 
     @input.chars.each do |char|
@@ -78,18 +83,18 @@ class SensitiveWords
       loop do 
         break if @queue.empty?
         chr = @queue.shift
-        process_check(chr, true)
+        process_check(identify, chr, true)
       end
-      process_check(char)
+      process_check(identify, char)
     end
 
-    process_check('')
+    process_check(identify, '')
     @words.first(max)
   end
 
   #所有的敏感词
-  def all_sensitive_words
-    @node, @words = @@dict, []
+  def all_sensitive_words(identify)
+    @node, @words = get_dict_by_identify(identify), []
     @word, @queue = '', []
 
     if @input then
@@ -97,19 +102,19 @@ class SensitiveWords
         loop do 
           break if @queue.empty?
           chr = @queue.shift
-          process_check(chr, true)
+          process_check(identify, chr, true)
         end
-        process_check(char)
+        process_check(identify, char)
       end
     end
 
-    process_check('')
+    process_check(identify, '')
     @words
   end
 
   private
 
-  def process_check(char,queuing=false)
+  def process_check(identify, char,queuing=false)
 
     match, word = nil, nil
 
@@ -133,7 +138,7 @@ class SensitiveWords
         end
       end
 
-      @node = @@dict
+      @node = get_dict_by_identify(identify)
       @word = ''
     end
 
@@ -142,4 +147,11 @@ class SensitiveWords
     end
   end
   
+  def get_dict_by_identify(identify)
+    dict = {}
+    if @@dict.member?(identify) then
+      dict = @@dict.fetch(identify)
+    end
+    dict
+  end
 end
